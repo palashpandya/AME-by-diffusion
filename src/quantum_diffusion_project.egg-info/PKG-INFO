@@ -1,0 +1,30 @@
+Metadata-Version: 2.4
+Name: quantum-diffusion-project
+Version: 0.1.0
+Summary: A diffusion model for generating Absolutely Maximally Entangled (AME) quantum states.
+Author-email: Palash <palash@example.com>
+License: MIT
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: torch>=2.10.0
+Requires-Dist: numpy>=2.4.2
+Requires-Dist: scipy>=1.17.1
+Requires-Dist: diffusers>=0.36.0
+Requires-Dist: tabulate>=0.9.0
+Requires-Dist: matplotlib>=3.10.8
+Requires-Dist: pytest>=7.0.0
+Requires-Dist: pytest-cov>=4.0.0
+
+# Quantum Diffusion Project
+
+This project implements a diffusion model for generating Absolutely Maximally Entangled (AME) quantum states.
+
+## Setup
+
+1. Clone the repository: `git clone https://github.com/yourusername/quantum-diffusion-project.git`
+2. Navigate to the project directory: `cd quantum-diffusion-project`
+3. Install dependencies using `uv`: `uv sync`
+
+## Usage
+
+Refer to `src/quantum_diffusion/main.py` and `src/quantum_diffusion/generate_training_data.py` for usage examples.

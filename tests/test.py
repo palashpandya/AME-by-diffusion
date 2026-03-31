@@ -11,10 +11,10 @@ Demonstrates:
 import unittest
 import torch
 import numpy as np
-from quantumDiffusionMLP import QuantumDiffusionMLP
-from loss import partial_trace_loss
-from benchmark import verify_ame_properties
-import config
+from src.models.mlp import QuantumDiffusionMLP
+from src.core.loss import partial_trace_loss_optimized
+from src.core.functions import verify_ame_properties
+from src import config
 
 
 class TestQuantumDiffusionMLP(unittest.TestCase):
@@ -75,7 +75,7 @@ class TestPartialTraceLoss(unittest.TestCase):
     def test_loss_output_is_scalar(self):
         """Test that loss output is a scalar tensor."""
         state = torch.randn(1, 2, self.vec_len)
-        loss = partial_trace_loss(state, d=self.d)
+        loss = partial_trace_loss_optimized(state, d=self.d, n=config.N) # Added n=config.N
         
         self.assertEqual(loss.ndim, 0)  # Scalar tensor
         self.assertIsInstance(loss, torch.Tensor)
@@ -83,7 +83,7 @@ class TestPartialTraceLoss(unittest.TestCase):
     def test_loss_is_non_negative(self):
         """Test that loss values are non-negative."""
         state = torch.randn(1, 2, self.vec_len)
-        loss = partial_trace_loss(state, d=self.d)
+        loss = partial_trace_loss_optimized(state, d=self.d, n=config.N) # Added n=config.N
         
         self.assertGreaterEqual(loss.item(), 0.0)
     
@@ -91,7 +91,7 @@ class TestPartialTraceLoss(unittest.TestCase):
         """Test loss computation with multiple states in batch."""
         batch_size = 4
         state = torch.randn(batch_size, 2, self.vec_len)
-        loss = partial_trace_loss(state, d=self.d)
+        loss = partial_trace_loss_optimized(state, d=self.d, n=config.N) # Added n=config.N
         
         self.assertEqual(loss.ndim, 0)  # Still returns single scalar
 

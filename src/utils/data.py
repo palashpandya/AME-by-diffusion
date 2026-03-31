@@ -7,8 +7,9 @@ noisy training samples for the diffusion model pre-training stage.
 
 import torch
 import numpy as np
-import config
-from main import generate_ame_state, partial_trace_loss
+from .. import config
+from ..core.functions import generate_ame_state
+from ..core.loss import partial_trace_loss_optimized
 import os
 
 SEED = 42
@@ -41,20 +42,18 @@ def generate_training_dataset(num_samples=10, save_path='training_data_ame.pt'):
     
     for idx, gs in enumerate(guidance_scales):
         try:
-            final_state, _ = generate_ame_state(
+            final_state = generate_ame_state(
                 guidance_scale=gs,
                 num_steps=config.TRAINING_DATA_GENERATION_STEPS,
-                verbose=False,
                 d=d,
                 n=n,
-                pretrain=False,  # Don't pre-train during data generation
                 use_lbfgs=False
             )
             
             # Verify it's a valid state
             final_state = final_state.to(device)
             state_real_imag = torch.stack([final_state.real, final_state.imag], dim=0).unsqueeze(0)
-            loss = partial_trace_loss(state_real_imag, d=d, n=n)
+            loss = partial_trace_loss_optimized(state_real_imag, d=d, n=n)
             
             clean_states.append(final_state)
             
