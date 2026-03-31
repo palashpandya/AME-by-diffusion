@@ -1,9 +1,7 @@
 import torch
 import torch.nn as nn
-from diffusers import DDPMScheduler as SCHEDULER
-from unet.unet import GeneralDynamicUNet
 import numpy as np
-import config
+from .. import config
 from itertools import combinations
 import string
 

@@ -1,11 +1,27 @@
 [project]
-name = "diffusion"
+name = "quantum-diffusion-project"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "diffusers>=0.36.0",
-    "matplotlib>=3.10.8",
-    "tabulate>=0.9.0",
+description = "A diffusion model for generating Absolutely Maximally Entangled (AME) quantum states."
+authors = [
+    { name = "Palash", email = "palash@example.com" }, # Placeholder: Replace with your name and email
 ]
+dependencies = [
+    "torch>=2.10.0",
+    "numpy>=2.4.2",
+    "scipy>=1.17.1",
+    "diffusers>=0.36.0",
+    "tabulate>=0.9.0",
+    "matplotlib>=3.10.8",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+requires-python = ">=3.12"
+readme = "README.md"
+license = { text = "MIT" } # Choose an appropriate license
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"] # Tells setuptools to look for packages in the 'src' directory

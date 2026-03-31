@@ -17,67 +17,40 @@ SEED = 42
 torch.manual_seed(SEED)
 np.random.seed(SEED)
 
-from main import generate_ame_state, partial_trace_loss
+from .. import config
+from ..core.functions import generate_ame_state, verify_ame_properties
 
 
-# --- VERIFICATION FUNCTION ---
-def verify_ame_properties(final_state, d=3):
-    """
-    Computes the AME quality metric (partial trace loss) on the final state.
-    Lower values indicate better AME properties.
-    
-    Args:
-        final_state: Complex tensor of shape (1, vec_len) or (vec_len,)
-        d: Qudit dimension
-    
-    Returns:
-        Float scalar representing the AME loss
-    """
-    # Ensure correct shape and convert to real-imag format for loss computation
-    if final_state.ndim == 1:
-        final_state = final_state.unsqueeze(0)  # Add batch dimension if needed
-    
-    # Stack real and imaginary parts
-    state_real_imag = torch.stack([final_state.real, final_state.imag], dim=1)
-    loss = partial_trace_loss(state_real_imag, d=d)
-    return loss.item()
 
 
 # --- BENCHMARKING FUNCTION ---
-def benchmark_ame_generation(guidance_scales=[0.1, 0.2], num_steps_list=[2000, 4000]):
-    """
-    Benchmark the AME generation with different guidance scales and number of steps.
+def benchmark_ame_generation(guidance_scales=[0.1, 0.2], num_steps_list=[2000, 4000], d=config.D, n=config.N, pretrain=True):
+    """Benchmark the AME generation with different guidance scales and number of steps.
     
     Args:
         guidance_scales: List of guidance scale values to test
         num_steps_list: List of number of steps to test
+        pretrain: To pretrain the model before benchmarking (default: True)
     
     Returns:
         results: List of dictionaries with benchmark results
     """
     results = []
-    
-    print("Starting Benchmarking...")
-    print(f"Testing {len(guidance_scales)} guidance scales × {len(num_steps_list)} step counts = {len(guidance_scales) * len(num_steps_list)} configurations\n")
-    
     total = len(guidance_scales) * len(num_steps_list)
     current = 0
     
     for guidance_scale, num_steps in itertools.product(guidance_scales, num_steps_list):
         current += 1
-        print(f"[{current}/{total}] Running with guidance_scale={guidance_scale}, num_steps={num_steps}...")
-        
-        final_state, loss_history = generate_ame_state(guidance_scale=guidance_scale, num_steps=num_steps, verbose=False)
-        ame_loss = verify_ame_properties(final_state, d=3)
+        print(f"[{current}/{total}] Testing: guidance_scale={guidance_scale}, num_steps={num_steps}")
+        final_state = generate_ame_state(guidance_scale=guidance_scale, num_steps=num_steps, d=d, n=n, use_lbfgs=True)
+        ame_loss = verify_ame_properties(final_state, d=d, n=n)
         
         results.append({
             'guidance_scale': guidance_scale,
             'num_steps': num_steps,
             'ame_loss': ame_loss,
-            'loss_history': loss_history
+            'loss_history': []
         })
-        
-        print(f"  → AME Loss: {ame_loss:.6f}\n")
     
     return results
 
@@ -92,9 +65,6 @@ def display_benchmark_results(results):
             result['num_steps'],
             f"{result['ame_loss']:.6f}"
         ])
-    
-    
-    print("\nBENCHMARK RESULTS\n")
     
     print(tabulate(table_data, 
                    headers=['Guidance Scale', 'Num Steps', 'AME Loss'],
@@ -147,8 +117,7 @@ def plot_loss_trajectories(results):
         axes1[idx].set_visible(False)
     
     plt.tight_layout()
-    plt.savefig('loss_trajectories_by_guidance2.png', dpi=300, bbox_inches='tight')
-    print("Saved: loss_trajectories_by_guidance2.png")
+    plt.savefig('loss_trajectories_by_guidance.png', dpi=300, bbox_inches='tight')
     
     # Figure 2: Grouped by num_steps
     n_steps = len(num_steps_list)
@@ -182,8 +151,7 @@ def plot_loss_trajectories(results):
         axes2[idx].set_visible(False)
     
     plt.tight_layout()
-    plt.savefig('loss_trajectories_by_steps2.png', dpi=300, bbox_inches='tight')
-    print("Saved: loss_trajectories_by_steps2.png")
+    plt.savefig('loss_trajectories_by_steps.png', dpi=300, bbox_inches='tight')
     
     # Figure 3: Final loss heatmap
     fig3, ax3 = plt.subplots(figsize=(10, 6))
@@ -213,11 +181,8 @@ def plot_loss_trajectories(results):
     
     plt.colorbar(im, ax=ax3, label='AME Loss')
     plt.tight_layout()
-    plt.savefig('loss_heatmap2.png', dpi=300, bbox_inches='tight')
-    print("Saved: loss_heatmap2.png")
+    plt.savefig('loss_heatmap.png', dpi=300, bbox_inches='tight')
 
-
-# --- VERIFICATION REPORTING ---
 def print_ame_verification(state_vector, d=3):
     """
     Checks the entanglement properties of the state across all 2-party cuts.
@@ -226,8 +191,6 @@ def print_ame_verification(state_vector, d=3):
         state_vector: Complex tensor of shape (vec_len,)
         d: Qudit dimension
     """
-    print("\n--- AME Verification Report ---")
-    
     # Ensure state is a tensor and reshaped correctly
     psi = state_vector.view(d, d, d, d)
     
@@ -258,6 +221,4 @@ def print_ame_verification(state_vector, d=3):
         eigvals = eigvals[eigvals > 1e-10]
         entropy = -torch.sum(eigvals * torch.log(eigvals)).item()
         
-        print(f"Partition {label}:")
-        print(f"  > Purity:  {purity:.6f} (Target: {target_purity:.6f})")
-        print(f"  > Entropy: {entropy:.6f} (Target: {max_entropy:.6f})")
+        # Store or use values as needed

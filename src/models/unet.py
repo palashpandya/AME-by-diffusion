@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import config
+from .. import config
 
 class ResBlock(nn.Module):
     def __init__(self, in_ch, out_ch, time_emb_dim):
