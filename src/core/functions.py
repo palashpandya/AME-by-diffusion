@@ -134,7 +134,7 @@ def train_diffusion_model(model, num_epochs=100, batch_size=16, d=config.D, n=co
     model.eval()
 
 # --- L-BFGS FINE-TUNING ---
-def fine_tune_with_lbfgs(state_complex, d, n, max_iters=500, verbose=False):
+def fine_tune_with_lbfgs(state_complex, d, n, max_iters=1000, verbose=False):
     """Fine-tune state using L-BFGS for very tight convergence.
 
     Args:
@@ -147,7 +147,7 @@ def fine_tune_with_lbfgs(state_complex, d, n, max_iters=500, verbose=False):
     state_imag = state_complex.imag.to(torch.float64).clone().detach().requires_grad_(True)
     
     params = [state_real, state_imag]
-    optimizer = torch.optim.LBFGS( params, lr=1, max_iter=1000, tolerance_change=1e-16,tolerance_grad=1e-16, line_search_fn='strong_wolfe')
+    optimizer = torch.optim.LBFGS( params, lr=1, max_iter=max_iters, tolerance_change=1e-16,tolerance_grad=1e-16, line_search_fn='strong_wolfe')
 
     def closure():
         optimizer.zero_grad()
@@ -295,7 +295,7 @@ def generate_ame_state2(guidance_scale=0.2, num_steps=2000, verbose=False, d=con
         result = torch.complex(x[:,0,:], x[:,1,:]).squeeze(0).detach().cpu()
         return result, loss_history
     
-def generate_ame_state(guidance_scale=0.1, num_steps=1000, d=config.D, n=config.N, use_lbfgs=True):
+def generate_ame_state(guidance_scale=0.1, num_steps=50, d=config.D, n=config.N, use_lbfgs=True):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     vec_len = d**n
     

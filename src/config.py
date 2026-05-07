@@ -6,8 +6,8 @@ so the rest of the codebase uses a single source of truth.
 """
 
 # Default AME parameters
-D = 6
-N = 4
+D = 3
+N = 7
 
 # Benchmarking configurations (pre-train epochs, guidance scales and step counts)
 BENCHMARK_EPOCHS = 250

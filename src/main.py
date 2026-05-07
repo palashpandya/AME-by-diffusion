@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 if __name__ == "__main__":
 
     # final_state, loss_history = generate_ame_state(guidance_scale=0.05, num_steps=2000, verbose=True, d=config.D, n=config.N, pretrain=False, use_lbfgs=True)
-    final_state = generate_ame_state(guidance_scale=0.05, num_steps=50,  d=config.D, n=config.N, use_lbfgs=True)
+    final_state = generate_ame_state(guidance_scale=0.05, num_steps=1000,  d=config.D, n=config.N, use_lbfgs=True)
     ame_loss = verify_ame_properties(final_state, d=config.D, n=config.N)
     # print(f"Final AME Loss: {ame_loss:.6f}")
     # result = make_density_matrix(torch.stack([final_state.real, final_state.imag], dim=0).unsqueeze(0), d=config.D, n=config.N)
@@ -36,19 +36,20 @@ if __name__ == "__main__":
     # check bfgs:
     vec_len = config.D ** config.N
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    x_final = final_state.to(device)
+    print(f"Using device: {device}")
+    x_final = final_state.to("cuda")
     x_optimized = fine_tune_with_lbfgs(x_final, d=config.D, n=config.N, verbose=True)
     rho = make_density_matrix(torch.stack([x_optimized.real, x_optimized.imag], dim=0).unsqueeze(0), d=config.D, n=config.N)
     partial_trace_loss_value = partial_trace_loss_optimized(torch.stack([x_optimized.real, x_optimized.imag], dim=0).unsqueeze(0), d=config.D, n=config.N).item()
     print(f"Partial Trace Loss after L-BFGS fine-tuning: {partial_trace_loss_value:.6f}")
     print("Purity after lbfgs fine-tuning:", purity(rho).item())
     
-    x_optimized = fine_tune_with_lbfgs(x_optimized, d=config.D, n=config.N, verbose=True)
-    rho = make_density_matrix(torch.stack([x_optimized.real, x_optimized.imag], dim=0).unsqueeze(0), d=config.D, n=config.N)
-    partial_trace_loss_value = partial_trace_loss_optimized(torch.stack([x_optimized.real, x_optimized.imag], dim=0).unsqueeze(0), d=config.D, n=config.N).item()
+    # x_optimized = fine_tune_with_lbfgs(x_optimized, d=config.D, n=config.N, verbose=True)
+    # rho = make_density_matrix(torch.stack([x_optimized.real, x_optimized.imag], dim=0).unsqueeze(0), d=config.D, n=config.N)
+    # partial_trace_loss_value = partial_trace_loss_optimized(torch.stack([x_optimized.real, x_optimized.imag], dim=0).unsqueeze(0), d=config.D, n=config.N).item()
     
-    print(f"Partial Trace Loss after L-BFGS fine-tuning: {partial_trace_loss_value:.6f}")
-    print("Purity after lbfgs fine-tuning:", purity(rho).item())
+    # print(f"Partial Trace Loss after L-BFGS fine-tuning: {partial_trace_loss_value:.6f}")
+    # print("Purity after lbfgs fine-tuning:", purity(rho).item())
     plt.matshow(rho.squeeze().cpu().numpy().real, cmap='viridis')
     plt.colorbar()
     plt.title("Real part of Density Matrix after L-BFGS Fine-tuning")
