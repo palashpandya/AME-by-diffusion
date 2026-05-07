@@ -16,8 +16,7 @@ np.random.seed(SEED)
 def make_density_matrix(state_real_imag, d, n):
     """Convert real-imag tensor to complex state and form density matrix."""
     psi = torch.complex(state_real_imag[:, 0, :], state_real_imag[:, 1, :])
-    rho = torch.matmul( psi.conj().transpose(-2, -1), psi)  # from vector to density matrix (outer product)
-    # rho = psi + psi.conj().transpose(-2, -1)  # Density matrix (unnormalized)
+    rho = psi.unsqueeze(-1) @ psi.conj().unsqueeze(-2)  # per-batch outer product |psi><psi|
     trace = torch.diagonal(rho, dim1=-2, dim2=-1).sum(-1, keepdim=True)
     rho = rho / (trace.unsqueeze(-1))  # Normalize to trace 1
     return rho
